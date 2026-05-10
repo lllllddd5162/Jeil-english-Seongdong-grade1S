@@ -26,6 +26,7 @@ import {
   KeyRound, AlertTriangle, Fingerprint, School, UserCircle2, FileSearch, ClipboardList, Loader2,
   Tag, TrendingUp, Printer, Sparkles, Copy, ChevronDown, Bot, RefreshCw,
   BookMarked, Languages, Star, Globe, Pencil, FlaskConical, Atom, Apple,
+  Cherry, Glasses, PersonStanding,
   Music, Heart, Sun, Moon, Rocket, Crown, Diamond, Flame, Leaf, Bird,
   Cat, Dog, Fish, Smile, Coffee, Bus, Bike, Car, Home, Building2,
   MapPin, Flag, Bell, Gift, Camera, Mic, Headphones, Tv, Monitor,
@@ -90,6 +91,9 @@ const ICON_LIST = [
   { name: 'Cat',             component: Cat },
   { name: 'Dog',             component: Dog },
   { name: 'Apple',           component: Apple },
+  { name: 'Cherry',          component: Cherry },
+  { name: 'Glasses',         component: Glasses },
+  { name: 'PersonStanding',  component: PersonStanding },
   { name: 'Coffee',          component: Coffee },
   { name: 'Smile',           component: Smile },
   { name: 'Home',            component: Home },
@@ -313,6 +317,7 @@ export default function App() {
   const [passwordInput, setPasswordInput] = useState('');
   const [studentCodeInput, setStudentCodeInput] = useState('');
   const [loginError, setLoginError] = useState(false);
+  const [autoLogin, setAutoLogin] = useState(false);
   // 마스터 코드 앱 내 변경
   const [masterCode, setMasterCode] = useState('1234');
   const [showMasterCodeEdit, setShowMasterCodeEdit] = useState(false);
@@ -435,16 +440,21 @@ export default function App() {
         setUserRole(role);
         setMyStudentId(studentId || null);
         setIsLoggedIn(true);
+        setAutoLogin(true);
       } catch {}
     }
   }, []);
 
   // --- Handlers ---
-  const handleLogin = (role, sId = null) => {
+  const handleLogin = (role, sId = null, keepLogin = autoLogin) => {
     setUserRole(role);
     setMyStudentId(sId);
     setIsLoggedIn(true);
-    localStorage.setItem(`${APP_ID}_login`, JSON.stringify({ role, studentId: sId }));
+    if (keepLogin) {
+      localStorage.setItem(`${APP_ID}_login`, JSON.stringify({ role, studentId: sId }));
+    } else {
+      localStorage.removeItem(`${APP_ID}_login`);
+    }
   };
 
   const handleLogout = () => {
@@ -890,7 +900,13 @@ export default function App() {
         <div className="w-full max-w-lg bg-white rounded-[3.5rem] shadow-2xl p-12 border border-slate-200 animate-in fade-in zoom-in-95 duration-500">
           <div className="flex flex-col items-center mb-10 text-center">
             <div className="rounded-[2.2rem] text-white mb-6 shadow-2xl p-6" style={{background:siteColor}}>
-              {(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {size:48}) : React.createElement(Languages, {size:48}); })()}
+              {(() => {
+                if (siteIconName.startsWith('__custom__')) {
+                  return <span className="text-white font-black leading-none" style={{fontSize:'3rem'}}>{siteIconName.replace('__custom__','')}</span>;
+                }
+                const ic = ICON_LIST.find(i => i.name === siteIconName);
+                return ic ? React.createElement(ic.component, {size:48}) : React.createElement(Languages, {size:48});
+              })()}
             </div>
             <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">{siteTitle}</h1>
             <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-3">시스템 접속 권한 인증</p>
@@ -914,6 +930,20 @@ export default function App() {
               <div className="flex items-center gap-4"><Fingerprint size={24} /><div><p className="font-black text-lg">학생 / 학부모 포털</p><p className="text-xs text-emerald-100 font-medium mt-1">학생 코드로 접속</p></div></div>
               <ChevronRight size={20} className="opacity-40" />
             </button>
+
+            {/* 자동 로그인 체크박스 */}
+            <label className="flex items-center justify-center gap-3 py-3 cursor-pointer select-none group">
+              <div
+                onClick={() => setAutoLogin(v => !v)}
+                className={"w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all flex-shrink-0 " + (autoLogin ? "border-transparent" : "border-slate-300 bg-white")}
+                style={autoLogin ? {background: siteColor} : {}}
+              >
+                {autoLogin && <Check size={13} className="text-white" strokeWidth={3} />}
+              </div>
+              <span className="text-sm font-black text-slate-500 group-hover:text-slate-700 transition-colors">
+                자동 로그인 <span className="text-[10px] font-bold text-slate-400">(새로고침해도 로그인 유지)</span>
+              </span>
+            </label>
           </div>
         </div>
 
@@ -963,7 +993,15 @@ export default function App() {
         <header className="text-white shadow-lg sticky top-0 z-40" style={{background:'var(--sc-darker)'}}>
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg">{(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {className:"w-7 h-7"}) : React.createElement(Languages, {className:"w-7 h-7"}); })()}</div>
+              <div className="p-2 bg-white/20 rounded-lg flex items-center justify-center w-11 h-11">
+                {(() => {
+                  if (siteIconName.startsWith('__custom__')) {
+                    return <span className="text-white font-black text-xl leading-none">{siteIconName.replace('__custom__','')}</span>;
+                  }
+                  const ic = ICON_LIST.find(i => i.name === siteIconName);
+                  return ic ? React.createElement(ic.component, {className:"w-7 h-7"}) : React.createElement(Languages, {className:"w-7 h-7"});
+                })()}
+              </div>
               <div>
                 <div className="flex items-center gap-2">
                   {isEditingTitle && userRole === 'master' ? (
@@ -2088,39 +2126,53 @@ export default function App() {
 
                 {/* 현재 아이콘 미리보기 */}
                 <div className="flex items-center gap-4 mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-100">
-                  <div className="p-4 rounded-2xl text-white shadow-lg" style={{background:"var(--sc)"}}>
-                    {(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {size:32}) : React.createElement(Languages, {size:32}); })()}
+                  <div className="p-4 rounded-2xl text-white shadow-lg flex items-center justify-center min-w-[64px] min-h-[64px]" style={{background:"var(--sc)"}}>
+                    {(() => {
+                      if (siteIconName.startsWith('__custom__')) {
+                        return <span className="font-black leading-none" style={{fontSize:'2rem'}}>{siteIconName.replace('__custom__','')}</span>;
+                      }
+                      const ic = ICON_LIST.find(i => i.name === siteIconName);
+                      return ic ? React.createElement(ic.component, {size:32}) : React.createElement(Languages, {size:32});
+                    })()}
                   </div>
                   <div>
                     <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">현재 아이콘</p>
-                    <p className="font-black text-slate-700 text-lg">{siteIconName}</p>
+                    <p className="font-black text-slate-700 text-lg">{siteIconName.startsWith('__custom__') ? '"' + siteIconName.replace('__custom__','') + '" (직접 입력)' : siteIconName}</p>
                   </div>
                 </div>
 
-                {/* 직접 입력 */}
+                {/* 직접 입력 - 1글자 */}
                 <div className="mb-4">
-                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">아이콘 이름 직접 입력</p>
-                  <div className="flex gap-2">
-                    <input
-                      value={iconSearchInput}
-                      onChange={e => setIconSearchInput(e.target.value)}
-                      placeholder="예: BookOpen, Star, Rocket ..."
-                      className="flex-1 px-4 py-2.5 bg-slate-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-blue-400 transition-all text-slate-700 text-sm"
-                      onKeyDown={e => {
-                        if (e.key === "Enter") {
-                          const found = ICON_LIST.find(i => i.name.toLowerCase() === iconSearchInput.trim().toLowerCase());
-                          if (found) { saveSiteIcon(found.name); setIconSearchInput(""); }
-                          else alert("목록에 없는 아이콘입니다. 아래 목록에서 선택해 주세요.");
-                        }
-                      }}
-                    />
-                    <button onClick={() => {
-                      const found = ICON_LIST.find(i => i.name.toLowerCase() === iconSearchInput.trim().toLowerCase());
-                      if (found) { saveSiteIcon(found.name); setIconSearchInput(""); }
-                      else alert("목록에 없는 아이콘입니다. 아래 목록에서 선택해 주세요.");
-                    }} className="px-4 py-2.5 text-white rounded-2xl font-black text-sm shadow-sm transition-all active:scale-95" style={{background:"var(--sc)"}}>적용</button>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">글자/기호 직접 입력 <span className="normal-case text-slate-300 font-bold">(알파벳·숫자·특수문자·이모지 1글자)</span></p>
+                  <div className="flex gap-3 items-center">
+                    {/* 미리보기 */}
+                    <div className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-3xl font-black shadow-md flex-shrink-0" style={{background:"var(--sc)"}}>
+                      {iconSearchInput.length > 0 ? iconSearchInput.slice(0,2) : <span className="text-white/40 text-base">?</span>}
+                    </div>
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        value={iconSearchInput}
+                        onChange={e => {
+                          // 이모지는 2바이트라 slice로 처리
+                          const val = [...e.target.value];
+                          setIconSearchInput(val.slice(0,1).join(''));
+                        }}
+                        placeholder="A, E, ★, 🎯 ..."
+                        className="flex-1 px-4 py-3 bg-slate-50 border-2 border-transparent rounded-2xl font-black outline-none focus:border-blue-400 transition-all text-slate-700 text-2xl text-center tracking-widest"
+                        maxLength={2}
+                      />
+                      <button
+                        onClick={() => {
+                          if (!iconSearchInput.trim()) return;
+                          saveSiteIcon('__custom__' + iconSearchInput.slice(0,2));
+                          setIconSearchInput('');
+                        }}
+                        disabled={!iconSearchInput.trim()}
+                        className={"px-4 py-3 text-white rounded-2xl font-black text-sm shadow-sm transition-all active:scale-95 " + (!iconSearchInput.trim() ? "opacity-40 cursor-not-allowed" : "")}
+                        style={{background:"var(--sc)"}}>적용</button>
+                    </div>
                   </div>
-                  <p className="text-[10px] text-slate-400 font-medium mt-1.5">Enter 또는 적용 버튼 · 대소문자 무관</p>
+                  <p className="text-[10px] text-slate-400 font-medium mt-2">입력한 글자가 헤더 및 로그인 화면 아이콘으로 표시됩니다.</p>
                 </div>
 
                 {/* 목록에서 선택 */}
