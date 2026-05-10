@@ -895,9 +895,9 @@ export default function App() {
   // ==========================================================
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6 font-sans text-slate-900 font-black">
+      <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-900 font-black">
         <SiteColorStyle color={siteColor} />
-        <div className="w-full max-w-lg bg-white rounded-[3.5rem] shadow-2xl p-12 border border-slate-200 animate-in fade-in zoom-in-95 duration-500">
+        <div className="w-full max-w-lg bg-white rounded-[3.5rem] shadow-2xl p-8 md:p-12 border border-slate-200 animate-in fade-in zoom-in-95 duration-500 overflow-y-auto max-h-[95vh]">
           <div className="flex flex-col items-center mb-10 text-center">
             <div className="rounded-[2.2rem] text-white mb-6 shadow-2xl p-6" style={{background:siteColor}}>
               {(() => {
