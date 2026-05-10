@@ -25,8 +25,84 @@ import {
   GraduationCap, UserCog, ChevronRight, LogOut, ShieldCheck,
   KeyRound, AlertTriangle, Fingerprint, School, UserCircle2, FileSearch, ClipboardList, Loader2,
   Tag, TrendingUp, Printer, Sparkles, Copy, ChevronDown, Bot, RefreshCw,
-  BookMarked, Languages
+  BookMarked, Languages, Star, Globe, Pencil, FlaskConical, Atom, Apple,
+  Music, Heart, Sun, Moon, Rocket, Crown, Diamond, Flame, Leaf, Bird,
+  Cat, Dog, Fish, Smile, Coffee, Bus, Bike, Car, Home, Building2,
+  MapPin, Flag, Bell, Gift, Camera, Mic, Headphones, Tv, Monitor,
+  Laptop, Tablet, Smartphone, Watch, Calculator as Calc, BookOpenCheck,
+  ClipboardPen, NotebookPen, PenTool, Paintbrush, Palette, Brush,
+  Settings, LayoutDashboard, BarChart2, PieChart, LineChart,
+  Aperture, Compass, Cpu, Database, Code, Terminal, Wifi,
+  Lock, Unlock, Eye, EyeOff, Link, Share2, Download, Upload,
+  RefreshCcw, RotateCcw, ZoomIn, ZoomOut, Maximize, Minimize,
+  ChevronUp, ArrowUp, ArrowDown, ArrowLeft, ArrowRight,
+  Check, X, Plus as PlusIcon, Minus, Divide, Equal,
+  AlignLeft, AlignCenter, AlignRight, Bold, Italic, Underline,
+  List, Hash, At, Percent, DollarSign, Euro, Infinity,
+  Dumbbell, Trophy as TrophyIcon, Medal, Award, Target,
+  Lightbulb, Wrench, Hammer, Scissors, Paperclip, Pin,
+  Send, Mail, Phone, Video, MessageCircle, MessageSquareMore,
+  Map, Navigation, Plane, Train, Ship, Tent, Mountain,
+  Cloud, CloudRain, Snowflake, Wind, Thermometer, Droplets,
+  Sprout, Flower2, TreePine, Clover, Mushroom,
+  Hexagon, Pentagon, Triangle, Square, CircleDot, Shapes
 } from 'lucide-react';
+
+// 아이콘 후보 목록 (사이트 관리에서 선택 가능)
+const ICON_LIST = [
+  { name: 'Languages',       component: Languages },
+  { name: 'BookOpen',        component: BookOpen },
+  { name: 'BookOpenCheck',   component: BookOpenCheck },
+  { name: 'BookMarked',      component: BookMarked },
+  { name: 'GraduationCap',   component: GraduationCap },
+  { name: 'School',          component: School },
+  { name: 'Pencil',          component: Pencil },
+  { name: 'PenTool',         component: PenTool },
+  { name: 'NotebookPen',     component: NotebookPen },
+  { name: 'ClipboardPen',    component: ClipboardPen },
+  { name: 'Paintbrush',      component: Paintbrush },
+  { name: 'Palette',         component: Palette },
+  { name: 'Star',            component: Star },
+  { name: 'Crown',           component: Crown },
+  { name: 'Diamond',         component: Diamond },
+  { name: 'Flame',           component: Flame },
+  { name: 'Rocket',          component: Rocket },
+  { name: 'Globe',           component: Globe },
+  { name: 'Compass',         component: Compass },
+  { name: 'Target',          component: Target },
+  { name: 'Trophy',          component: Trophy },
+  { name: 'Medal',           component: Medal },
+  { name: 'Award',           component: Award },
+  { name: 'Lightbulb',       component: Lightbulb },
+  { name: 'BrainCircuit',    component: BrainCircuit },
+  { name: 'Cpu',             component: Cpu },
+  { name: 'Atom',            component: Atom },
+  { name: 'FlaskConical',    component: FlaskConical },
+  { name: 'Music',           component: Music },
+  { name: 'Heart',           component: Heart },
+  { name: 'Sun',             component: Sun },
+  { name: 'Moon',            component: Moon },
+  { name: 'Leaf',            component: Leaf },
+  { name: 'Sprout',          component: Sprout },
+  { name: 'TreePine',        component: TreePine },
+  { name: 'Flower2',         component: Flower2 },
+  { name: 'Bird',            component: Bird },
+  { name: 'Cat',             component: Cat },
+  { name: 'Dog',             component: Dog },
+  { name: 'Apple',           component: Apple },
+  { name: 'Coffee',          component: Coffee },
+  { name: 'Smile',           component: Smile },
+  { name: 'Home',            component: Home },
+  { name: 'Building2',       component: Building2 },
+  { name: 'MapPin',          component: MapPin },
+  { name: 'Flag',            component: Flag },
+  { name: 'Bell',            component: Bell },
+  { name: 'Gift',            component: Gift },
+  { name: 'Dumbbell',        component: Dumbbell },
+  { name: 'Mountain',        component: Mountain },
+  { name: 'Plane',           component: Plane },
+  { name: 'Shapes',          component: Shapes },
+];
 
 // --- Firebase Configuration ---
 const firebaseConfig = {
@@ -229,6 +305,8 @@ export default function App() {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [siteColor, setSiteColor] = useState('#1d4ed8');
   const [showColorPicker, setShowColorPicker] = useState(false);
+  const [siteIconName, setSiteIconName] = useState('Languages');
+  const [iconSearchInput, setIconSearchInput] = useState(');
 
   // Auth
   const [showPasswordInput, setShowPasswordInput] = useState(null);
@@ -433,6 +511,13 @@ export default function App() {
     setShowColorPicker(false);
   };
 
+  // 사이트 아이콘 저장
+  const saveSiteIcon = async (iconName) => {
+    if (userRole !== 'master') return;
+    setSiteIconName(iconName);
+    await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), { siteIconName: iconName }, { merge: true });
+  };
+
   // 과목 저장
   const saveSubjects = async (newList) => {
     setSubjects(newList);
@@ -634,6 +719,7 @@ export default function App() {
                 if (d.subjects) setSubjects(d.subjects);
                 if (d.memoSections) setMemoSections(d.memoSections);
                 if (d.masterCode) setMasterCode(d.masterCode);
+                if (d.siteIconName) setSiteIconName(d.siteIconName);
               }
             }));
             unsubscribers.push(onSnapshot(query(collection(db, ...basePath, 'students')), s =>
@@ -804,7 +890,7 @@ export default function App() {
         <div className="w-full max-w-lg bg-white rounded-[3.5rem] shadow-2xl p-12 border border-slate-200 animate-in fade-in zoom-in-95 duration-500">
           <div className="flex flex-col items-center mb-10 text-center">
             <div className="rounded-[2.2rem] text-white mb-6 shadow-2xl p-6" style={{background:siteColor}}>
-              <Languages size={48} />
+              {(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {size:48}) : React.createElement(Languages, {size:48}); })()}
             </div>
             <h1 className="text-3xl font-black text-slate-800 uppercase tracking-tighter">{siteTitle}</h1>
             <p className="text-slate-400 text-sm font-bold uppercase tracking-widest mt-3">시스템 접속 권한 인증</p>
@@ -877,7 +963,7 @@ export default function App() {
         <header className="text-white shadow-lg sticky top-0 z-40" style={{background:'var(--sc-darker)'}}>
           <div className="max-w-7xl mx-auto px-4 md:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-3">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-white/20 rounded-lg"><Languages className="w-7 h-7" /></div>
+              <div className="p-2 bg-white/20 rounded-lg">{(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {className:"w-7 h-7"}) : React.createElement(Languages, {className:"w-7 h-7"}); })()}</div>
               <div>
                 <div className="flex items-center gap-2">
                   {isEditingTitle && userRole === 'master' ? (
@@ -931,6 +1017,7 @@ export default function App() {
                 { id: 'students',     l: '학생 관리', i: Users,    h: userRole === 'student' },
                 { id: 'report',       l: '리포트',    i: Printer,  h: userRole === 'student' },
                 { id: 'assignments',  l: '항목 등록', i: BookOpen, h: userRole === 'student' },
+                { id: 'sitemanage',   l: '사이트 관리', i: Settings, h: userRole !== 'master' },
               ].filter(t => !t.h).map(tab => (
                 <button key={tab.id} onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all text-xs font-bold whitespace-nowrap ${activeTab === tab.id ? 'bg-white text-slate-900 shadow-md font-black' : 'hover:bg-white/10 text-white'}`}>
@@ -1983,6 +2070,129 @@ export default function App() {
                   </div>
                 ))}
               </div>
+            </div>
+          )}
+
+          {/* ====================================================
+              사이트 관리 (마스터 전용)
+          ==================================================== */}
+          {activeTab === 'sitemanage' && userRole === 'master' && (
+            <div className="max-w-2xl mx-auto space-y-6">
+
+              {/* 사이트 아이콘 변경 */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <h2 className="text-base font-black text-slate-800 flex items-center gap-2 mb-5">
+                  {(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {size:18, style:{color:"var(--sc)"}}) : React.createElement(Languages, {size:18, style:{color:"var(--sc)"}}); })()}
+                  사이트 아이콘 변경
+                </h2>
+
+                {/* 현재 아이콘 미리보기 */}
+                <div className="flex items-center gap-4 mb-5 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div className="p-4 rounded-2xl text-white shadow-lg" style={{background:"var(--sc)"}}>
+                    {(() => { const ic = ICON_LIST.find(i => i.name === siteIconName); return ic ? React.createElement(ic.component, {size:32}) : React.createElement(Languages, {size:32}); })()}
+                  </div>
+                  <div>
+                    <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">현재 아이콘</p>
+                    <p className="font-black text-slate-700 text-lg">{siteIconName}</p>
+                  </div>
+                </div>
+
+                {/* 직접 입력 */}
+                <div className="mb-4">
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">아이콘 이름 직접 입력</p>
+                  <div className="flex gap-2">
+                    <input
+                      value={iconSearchInput}
+                      onChange={e => setIconSearchInput(e.target.value)}
+                      placeholder="예: BookOpen, Star, Rocket ..."
+                      className="flex-1 px-4 py-2.5 bg-slate-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-blue-400 transition-all text-slate-700 text-sm"
+                      onKeyDown={e => {
+                        if (e.key === "Enter") {
+                          const found = ICON_LIST.find(i => i.name.toLowerCase() === iconSearchInput.trim().toLowerCase());
+                          if (found) { saveSiteIcon(found.name); setIconSearchInput(""); }
+                          else alert("목록에 없는 아이콘입니다. 아래 목록에서 선택해 주세요.");
+                        }
+                      }}
+                    />
+                    <button onClick={() => {
+                      const found = ICON_LIST.find(i => i.name.toLowerCase() === iconSearchInput.trim().toLowerCase());
+                      if (found) { saveSiteIcon(found.name); setIconSearchInput(""); }
+                      else alert("목록에 없는 아이콘입니다. 아래 목록에서 선택해 주세요.");
+                    }} className="px-4 py-2.5 text-white rounded-2xl font-black text-sm shadow-sm transition-all active:scale-95" style={{background:"var(--sc)"}}>적용</button>
+                  </div>
+                  <p className="text-[10px] text-slate-400 font-medium mt-1.5">Enter 또는 적용 버튼 · 대소문자 무관</p>
+                </div>
+
+                {/* 목록에서 선택 */}
+                <div>
+                  <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">목록에서 선택 ({ICON_LIST.length}개)</p>
+                  <div className="grid grid-cols-5 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                    {ICON_LIST.map(({ name, component }) => {
+                      const isSelected = siteIconName === name;
+                      return (
+                        <button
+                          key={name}
+                          onClick={() => saveSiteIcon(name)}
+                          title={name}
+                          className={"flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border-2 transition-all active:scale-95 " + (isSelected ? "text-white border-transparent shadow-lg scale-105" : "bg-slate-50 border-slate-100 text-slate-500 hover:border-slate-300 hover:bg-white")}
+                          style={isSelected ? {background:"var(--sc)", borderColor:"var(--sc)"} : {}}
+                        >
+                          {React.createElement(component, {size: 22})}
+                          <span className="text-[7px] font-black leading-none text-center break-all">{name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* 마스터 코드 변경 */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
+                    <KeyRound size={16} className="text-orange-500"/> 마스터 코드 변경
+                  </h2>
+                  <button onClick={() => setShowMasterCodeEdit(v=>!v)}
+                    className={"px-3 py-1.5 rounded-xl text-xs font-black border transition-all " + (showMasterCodeEdit ? "bg-orange-500 text-white border-orange-500" : "bg-white border-slate-200 text-slate-500")}>
+                    {showMasterCodeEdit ? "취소" : "변경"}
+                  </button>
+                </div>
+                {showMasterCodeEdit ? (
+                  <div className="flex gap-2">
+                    <input type="password" value={newMasterCodeInput} onChange={e=>setNewMasterCodeInput(e.target.value)}
+                      placeholder="새 마스터 코드 입력"
+                      className="flex-1 px-4 py-2.5 bg-slate-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-orange-400 transition-all"
+                      onKeyDown={e=>e.key==="Enter"&&saveMasterCode()} />
+                    <button onClick={saveMasterCode} className="px-4 py-2.5 bg-orange-500 text-white rounded-2xl font-black text-sm shadow-sm hover:bg-orange-600 transition-all">저장</button>
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400 font-medium">현재 코드: <span className="font-black text-slate-600">{"*".repeat(masterCode.length)}</span></p>
+                )}
+              </div>
+
+              {/* 사이트 색상 */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <h2 className="text-base font-black text-slate-800 flex items-center gap-2 mb-4">
+                  <Palette size={16} className="text-pink-500"/> 사이트 색상 변경
+                </h2>
+                <div className="grid grid-cols-5 gap-2 mb-4">
+                  {[["#1d4ed8","블루"],["#0f766e","틸"],["#7c3aed","바이올렛"],["#3730a3","인디고"],["#b91c1c","레드"],["#c2410c","오렌지"],["#15803d","그린"],["#1e3a5f","네이비"],["#4a1d96","퍼플"],["#374151","그레이"]].map(([c,n])=>(
+                    <button key={c} onClick={()=>saveSiteColor(c)} title={n}
+                      className="h-12 rounded-2xl border-4 transition-all hover:scale-105 active:scale-95 shadow-sm flex items-center justify-center"
+                      style={{background:c, borderColor: siteColor===c?"#fff":"transparent", outline:siteColor===c?"3px solid "+c:"none"}}>
+                      {siteColor===c && <span className="text-white font-black text-lg">✓</span>}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-2 items-center">
+                  <input type="color" value={siteColor} onChange={e=>setSiteColor(e.target.value)} className="w-12 h-12 rounded-xl border-2 border-slate-100 cursor-pointer p-0.5" />
+                  <input type="text" value={siteColor}
+                    onChange={e=>{ if(/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setSiteColor(e.target.value); }}
+                    className="flex-1 px-3 py-3 border-2 border-slate-100 rounded-xl font-mono text-sm font-bold text-slate-700 outline-none focus:border-slate-400" placeholder="#1d4ed8" />
+                  <button onClick={()=>saveSiteColor(siteColor)} className="px-4 py-3 bg-slate-800 text-white rounded-xl font-black text-sm hover:bg-slate-700 transition-all">적용</button>
+                </div>
+              </div>
+
             </div>
           )}
         </main>
