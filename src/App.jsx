@@ -1022,7 +1022,7 @@ export default function App() {
                         <span style={{background:siteColor}} className="w-3 h-3 rounded-full border border-white/40 inline-block" />색상
                       </button>
                       {showColorPicker && (
-                        <div className="absolute top-7 left-0 z-[300] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 w-64 animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
+                        <div className="absolute top-8 right-0 z-[300] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 w-72 animate-in zoom-in-95" onClick={e=>e.stopPropagation()}>
                           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">추천 색상</p>
                           <div className="grid grid-cols-5 gap-2 mb-3">
                             {[['#1d4ed8','블루'],['#0f766e','틸'],['#7c3aed','바이올렛'],['#3730a3','인디고'],['#b91c1c','레드'],['#c2410c','오렌지'],['#15803d','그린'],['#1e3a5f','네이비'],['#4a1d96','퍼플'],['#374151','그레이']].map(([c,n])=>(
