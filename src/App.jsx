@@ -172,7 +172,7 @@ const DEFAULT_GRADE_SCALES = [
 ];
 
 // --- CSS Color Variable Injector ---
-function SiteColorStyle({ color }) {
+function SiteColorStyle({ color, dark }) {
   const hex = color || '#1d4ed8';
   const r = parseInt(hex.slice(1,3),16), g = parseInt(hex.slice(3,5),16), b = parseInt(hex.slice(5,7),16);
   const lighten = (amt) => { const nr=Math.min(255,r+amt),ng=Math.min(255,g+amt),nb=Math.min(255,b+amt); return '#'+[nr,ng,nb].map(x=>x.toString(16).padStart(2,'0')).join(''); };
@@ -195,6 +195,25 @@ function SiteColorStyle({ color }) {
         #print-report { position: fixed; top: 0; left: 0; width: 100%; }
         @page { margin: 1.5cm; }
       }
+      ${dark ? `
+        body { background: #0f172a !important; color: #e2e8f0 !important; }
+        .bg-white { background: #1e293b !important; }
+        .bg-slate-50 { background: #0f172a !important; }
+        .bg-slate-100 { background: #1e293b !important; }
+        .bg-slate-200 { background: #334155 !important; }
+        .border-slate-100 { border-color: #334155 !important; }
+        .border-slate-200 { border-color: #475569 !important; }
+        .text-slate-800 { color: #f1f5f9 !important; }
+        .text-slate-700 { color: #e2e8f0 !important; }
+        .text-slate-600 { color: #cbd5e1 !important; }
+        .text-slate-500 { color: #94a3b8 !important; }
+        .text-slate-400 { color: #64748b !important; }
+        .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.4) !important; }
+        .shadow-2xl { box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important; }
+        input, textarea, select { background: #1e293b !important; color: #e2e8f0 !important; border-color: #475569 !important; }
+        table thead tr { background: #1e293b !important; }
+        .divide-y > * { border-color: #334155 !important; }
+      ` : ''}
     `}</style>
   );
 }
@@ -311,6 +330,7 @@ export default function App() {
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [siteIconName, setSiteIconName] = useState('Languages');
   const [iconSearchInput, setIconSearchInput] = useState('');
+  const [darkMode, setDarkMode] = useState(false);
 
   // Auth
   const [showPasswordInput, setShowPasswordInput] = useState(null);
@@ -528,6 +548,13 @@ export default function App() {
     await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), { siteIconName: iconName }, { merge: true });
   };
 
+  // 다크모드 저장
+  const saveDarkMode = async (val) => {
+    if (userRole !== 'master') return;
+    setDarkMode(val);
+    await setDoc(doc(db, 'artifacts', APP_ID, 'public', 'data', 'settings', 'config'), { darkMode: val }, { merge: true });
+  };
+
   // 과목 저장
   const saveSubjects = async (newList) => {
     setSubjects(newList);
@@ -730,6 +757,7 @@ export default function App() {
                 if (d.memoSections) setMemoSections(d.memoSections);
                 if (d.masterCode) setMasterCode(d.masterCode);
                 if (d.siteIconName) setSiteIconName(d.siteIconName);
+                if (d.darkMode !== undefined) setDarkMode(d.darkMode);
               }
             }));
             unsubscribers.push(onSnapshot(query(collection(db, ...basePath, 'students')), s =>
@@ -896,7 +924,7 @@ export default function App() {
   if (!isLoggedIn) {
     return (
       <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans text-slate-900 font-black">
-        <SiteColorStyle color={siteColor} />
+        <SiteColorStyle color={siteColor} dark={darkMode} />
         <div className="w-full max-w-lg bg-white rounded-[3.5rem] shadow-2xl p-8 md:p-12 border border-slate-200 animate-in fade-in zoom-in-95 duration-500 overflow-y-auto max-h-[95vh]">
           <div className="flex flex-col items-center mb-10 text-center">
             <div className="rounded-[2.2rem] text-white mb-6 shadow-2xl p-6" style={{background:siteColor}}>
@@ -986,7 +1014,7 @@ export default function App() {
 
   return (
     <ErrorBoundary>
-      <SiteColorStyle color={siteColor} />
+      <SiteColorStyle color={siteColor} dark={darkMode} />
       <div className="min-h-screen bg-slate-50 font-sans text-slate-900 pb-20 overflow-x-hidden font-black">
 
         {/* HEADER */}
@@ -1350,13 +1378,23 @@ export default function App() {
                       <input type="date" value={newTest.date} onChange={(e)=>setNewTest(p=>({...p,date:e.target.value}))} className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-orange-400 transition-all" />
                     </div>
                   </div>
-                  <div className="mb-4">
-                    <p className="text-[10px] font-black text-slate-400 mb-2 uppercase">시험 유형</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {['중간 테스트','미니 테스트'].map(t=>(
-                        <button key={t} onClick={()=>setNewTest(p=>({...p,testType:t}))}
-                          className={`px-4 py-2 rounded-xl text-xs font-black border-2 transition ${newTest.testType===t?'bg-orange-500 border-orange-500 text-white':'border-slate-100 text-slate-400'}`}>{t}</button>
-                      ))}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 mb-2 uppercase">시험 유형</p>
+                      <div className="flex gap-2 flex-wrap">
+                        {['중간 테스트','미니 테스트'].map(t=>(
+                          <button key={t} onClick={()=>setNewTest(p=>({...p,testType:t}))}
+                            className={`px-4 py-2 rounded-xl text-xs font-black border-2 transition ${newTest.testType===t?'bg-orange-500 border-orange-500 text-white':'border-slate-100 text-slate-400'}`}>{t}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black text-slate-400 mb-2 uppercase">만점</p>
+                      <div className="relative">
+                        <BufferedInput type="number" value={newTest.maxScore??''} onSave={(v)=>setNewTest(p=>({...p,maxScore:v===''?null:parseFloat(v)}))} placeholder="예: 100"
+                          className="w-full px-4 py-3 bg-slate-50 border-2 border-transparent rounded-2xl font-bold outline-none focus:border-orange-400 transition-all" />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-black text-slate-400 pointer-events-none">점</span>
+                      </div>
                     </div>
                   </div>
                   <button onClick={addTest} className="w-full py-4 text-white rounded-2xl font-black shadow-lg transition-all active:scale-95" style={{background:'var(--sc)'}}>시험 등록</button>
@@ -1382,8 +1420,8 @@ export default function App() {
                             <th key={t.id} className="px-3 py-3 text-[10px] font-black text-orange-600 min-w-[100px] border-l border-orange-100">
                               <div className="text-center">
                                 <p className="leading-snug">{t.title}</p>
-                                <p className="text-[8px] text-orange-400 font-bold">{t.date}</p>
-                                <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 mt-0.5 inline-block">AVG {stats.testAverages[t.id]}</span>
+                                <p className="text-[8px] text-orange-400 font-bold">{t.date}{t.maxScore ? ` · 만점 ${t.maxScore}점` : ''}</p>
+                                <span className="text-[8px] font-black px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 mt-0.5 inline-block">AVG {stats.testAverages[t.id]}{t.maxScore ? ` / ${t.maxScore}` : ''}</span>
                                 {userRole === 'master' && (
                                   <button onClick={()=>{setSelectedTest(t);setIsTestEditMode(false);}} className="block mx-auto mt-1 text-[8px] px-1.5 py-0.5 rounded bg-slate-100 text-slate-400 hover:bg-slate-200 font-black transition-all">상세</button>
                                 )}
@@ -1414,12 +1452,43 @@ export default function App() {
                                   ) : res.absent === 'excluded' ? (
                                     <span className="text-[10px] font-black text-slate-300">비대상</span>
                                   ) : userRole === 'master' ? (
-                                    <BufferedInput type="number" value={score??''}
-                                      onSave={(v)=>setDoc(doc(db,'artifacts',APP_ID,'public','data','testScores',`${s.id}-${t.id}`),{score:v===''?null:parseFloat(v)},{merge:true})}
-                                      className="w-16 px-2 py-1.5 rounded-xl bg-white border border-orange-200 font-bold text-center text-sm focus:border-orange-400 outline-none" />
+                                    <div className="flex flex-col items-center gap-1">
+                                      <div className="flex items-center gap-1">
+                                        <BufferedInput type="number" value={score??''}
+                                          onSave={(v)=>setDoc(doc(db,'artifacts',APP_ID,'public','data','testScores',`${s.id}-${t.id}`),{score:v===''?null:parseFloat(v)},{merge:true})}
+                                          className="w-16 px-2 py-1.5 rounded-xl bg-white border border-orange-200 font-bold text-center text-sm focus:border-orange-400 outline-none" />
+                                        {t.maxScore && <span className="text-[9px] text-slate-400 font-bold">/{t.maxScore}</span>}
+                                      </div>
+                                      {/* 자동 기입 버튼: 문항 배점 합산 */}
+                                      {(() => {
+                                        const allQs = t.questions || [];
+                                        if (allQs.length === 0) return null;
+                                        const wrongNums = res.wrongNums || [];
+                                        const partialScores = res.partialScores || {};
+                                        const calcScore = () => {
+                                          const maxScore = t.maxScore || allQs.reduce((sum,q)=>sum+(parseFloat(q.points)||0),0);
+                                          const deduct = wrongNums.reduce((sum,n)=>{
+                                            const q = allQs[n-1];
+                                            if (!q) return sum;
+                                            if (q.type === '주관식') return sum + (maxScore - (parseFloat(partialScores[n]) ?? parseFloat(q.points) ?? 0));
+                                            return sum + (parseFloat(q.points)||0);
+                                          },0);
+                                          return Math.max(0, maxScore - deduct);
+                                        };
+                                        const auto = calcScore();
+                                        return (
+                                          <button onClick={()=>setDoc(doc(db,'artifacts',APP_ID,'public','data','testScores',`${s.id}-${t.id}`),{score:auto},{merge:true})}
+                                            className="text-[8px] font-black px-1.5 py-0.5 rounded-lg bg-orange-100 text-orange-600 hover:bg-orange-200 transition-all leading-none mt-0.5 flex items-center gap-0.5">
+                                            <Zap size={8}/>{auto}점 자동기입
+                                          </button>
+                                        );
+                                      })()}
+                                    </div>
                                   ) : (
                                     <div className="flex flex-col items-center gap-1">
-                                      <span className="font-black text-slate-800">{score!=null?`${score}점`:'-'}</span>
+                                      <span className="font-black text-slate-800">
+                                        {score!=null ? `${score}점${t.maxScore ? ` / ${t.maxScore}점` : ''}` : '-'}
+                                      </span>
                                       {grade && <span className="text-[9px] font-black px-1.5 py-0.5 rounded text-white leading-none" style={{background:grade.color?.replace('bg-','').includes('-')?undefined:grade.color}}>{grade.icon} {grade.label}</span>}
                                     </div>
                                   )}
@@ -2099,6 +2168,13 @@ export default function App() {
                         </div>
                         {userRole === 'master' && (
                           <div className="flex gap-1.5 shrink-0">
+                            <button onClick={async()=>{
+                              const coll = regCategory==='assignment'?'assignments':'memoItems';
+                              const list = regCategory==='assignment'?assignments:memoItems;
+                              const id = (regCategory==='assignment'?'a':'m')+Date.now();
+                              const sortOrder = list.length>0?Math.max(...list.map(x=>x.sortOrder||0))+1:0;
+                              await setDoc(doc(db,'artifacts',APP_ID,'public','data',coll,id),{...a,id:undefined,title:a.title+' (복사)',sortOrder,});
+                            }} className="p-2 text-emerald-500 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition-all" title="복사"><Copy size={15}/></button>
                             <button onClick={()=>{setEditItemId(a.id);setEditItemData({...a});}} className="p-2 text-indigo-500 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition-all"><Edit2 size={15}/></button>
                             <button onClick={()=>deleteItem(regCategory==='assignment'?'assignments':'memoItems',a.id)} className="p-2 text-red-500 bg-red-50 hover:bg-red-100 rounded-xl transition-all"><Trash2 size={15}/></button>
                           </div>
@@ -2242,6 +2318,25 @@ export default function App() {
                     onChange={e=>{ if(/^#[0-9a-fA-F]{0,6}$/.test(e.target.value)) setSiteColor(e.target.value); }}
                     className="flex-1 px-3 py-3 border-2 border-slate-100 rounded-xl font-mono text-sm font-bold text-slate-700 outline-none focus:border-slate-400" placeholder="#1d4ed8" />
                   <button onClick={()=>saveSiteColor(siteColor)} className="px-4 py-3 bg-slate-800 text-white rounded-xl font-black text-sm hover:bg-slate-700 transition-all">적용</button>
+                </div>
+              </div>
+
+
+              {/* 다크모드 */}
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-base font-black text-slate-800 flex items-center gap-2">
+                      <Moon size={16} className="text-indigo-500"/> 다크모드
+                    </h2>
+                    <p className="text-xs text-slate-400 font-medium mt-1">어두운 배경으로 전환합니다</p>
+                  </div>
+                  <button onClick={()=>saveDarkMode(!darkMode)}
+                    className={"relative w-14 h-7 rounded-full transition-all duration-300 flex items-center " + (darkMode ? "bg-indigo-500" : "bg-slate-200")}
+                  >
+                    <span className={"absolute w-6 h-6 bg-white rounded-full shadow-md transition-all duration-300 " + (darkMode ? "left-7" : "left-0.5")} />
+                    <span className={"absolute text-[9px] font-black transition-all " + (darkMode ? "left-2 text-white" : "right-1.5 text-slate-400")}>{darkMode ? "ON" : "OFF"}</span>
+                  </button>
                 </div>
               </div>
 
