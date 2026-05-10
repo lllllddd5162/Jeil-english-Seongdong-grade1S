@@ -306,7 +306,7 @@ export default function App() {
   const [siteColor, setSiteColor] = useState('#1d4ed8');
   const [showColorPicker, setShowColorPicker] = useState(false);
   const [siteIconName, setSiteIconName] = useState('Languages');
-  const [iconSearchInput, setIconSearchInput] = useState(');
+  const [iconSearchInput, setIconSearchInput] = useState('');
 
   // Auth
   const [showPasswordInput, setShowPasswordInput] = useState(null);
