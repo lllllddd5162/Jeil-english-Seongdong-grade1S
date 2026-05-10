@@ -1044,6 +1044,19 @@ export default function App() {
                 <div className="flex items-center gap-2 mt-1 text-[9px]">
                   <span className={`px-2 py-0.5 rounded font-black uppercase border ${userRole === 'master' ? 'bg-blue-500 border-blue-400' : userRole === 'teacher' ? 'bg-amber-500 border-amber-400' : 'bg-emerald-500 border-emerald-400'}`}>{userRole}</span>
                   <p className="text-white/50 tracking-widest uppercase ml-1">v1.0</p>
+                  {/* 다크모드 토글 - 모든 역할 */}
+                  <button
+                    onClick={() => {
+                      const next = !darkMode;
+                      if (userRole === 'master') saveDarkMode(next);
+                      else setDarkMode(next);
+                    }}
+                    className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all text-[9px] font-black text-white leading-none ml-1"
+                    title={darkMode ? '라이트모드로 전환' : '다크모드로 전환'}
+                  >
+                    {darkMode ? <Sun size={11}/> : <Moon size={11}/>}
+                    {darkMode ? '라이트' : '다크'}
+                  </button>
                   {userRole === 'master' && (
                     <div className="relative ml-2">
                       <button onClick={() => setShowColorPicker(v=>!v)} className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-white/10 hover:bg-white/20 transition-all text-[9px] font-black text-white leading-none">
