@@ -3,5 +3,5 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  base: '/Jeil-science-Physics/',
+  base: '/Jeil-english-Seongdong-grade1S/',
 })
